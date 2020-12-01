@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace Tms.Services.EdgeManagement.Domain
 {
+    /// <summary>
+    /// Repräsentiert einen Kundenauftrag.
+    /// </summary>
     public class Order
     {
         public Order()
@@ -16,9 +19,5 @@ namespace Tms.Services.EdgeManagement.Domain
         public Schedule Schedule { get; set; }
 
         public List<OrderPosition> Positions { get; private set; }
-
-        public TimeSpan EarliestArrival { get; set; }
-
-        public TimeSpan LatestArrival { get; set; }
     }
 }

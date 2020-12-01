@@ -17,7 +17,6 @@ namespace Tms.Services.EdgeManagement.Domain
         {
         }
 
-
         public ContainerType Container { get; set; }
 
         public int Quantity { get; set; }

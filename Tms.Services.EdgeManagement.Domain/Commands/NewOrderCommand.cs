@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Tms.Services.EdgeManagement.Domain.Repository;
-using Tms.Services.EdgeManagement.Domain.Services;
 
 namespace Tms.Services.EdgeManagement.Domain.Commands
 {
+    // Sonstige:
+    // BP.AUFTRAG, BP.VAR_AUFTRAG
+    // BP.TOUR, BP.VAR_TOUR
+    // BP.TOURENELEMENT
+    // Änderungen CutOff Zeiten inkl. Gültigkeiten
     public class NewOrderCommand : CommandBase<Order>
     {
         private readonly IDestinationRepository _destinationRepository;
@@ -27,14 +31,7 @@ namespace Tms.Services.EdgeManagement.Domain.Commands
 
             // Step 1: locate destinations
             var destinations = await _destinationRepository.GetDestinations();
-            var edges = new List<Edge>();
-            foreach(var position in order.Positions)
-            {
-                foreach(var load in position.Loads)
-                {
-                    var possibleDestinations = destinations.Where(d => d.AcceptedProducts.Any(p => p.Id == load.Product.Id));
-                }
-            }
+
 
             await Task.CompletedTask;
         } 

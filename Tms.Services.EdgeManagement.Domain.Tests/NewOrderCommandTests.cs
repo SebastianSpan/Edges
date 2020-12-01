@@ -9,17 +9,22 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
         private static ContainerType Kiste = new ContainerType { Id = 1, Name = "Kiste" };
 
         private static ContainerType Sack = new ContainerType { Id = 2, Name = "Sack" };
+
         private static ProductType Kiwi = new ProductType { Id = 1, Name = "Kiwi" };
+
         private static ProductType Banane = new ProductType { Id = 2, Name = "Banane" };
+
         private static ProductType Nuss = new ProductType { Id = 3, Name = "Nuss" };
+
         private static Location KölnerDom = new Location{ Name = "Kölner Dom", Position = new GeoPosition{Longitude = 50.9413, Latitude = 6.9583} };
+
         private static Location PZ_50 = new Location{ Name = "Kölner Dom", Position = new GeoPosition{Longitude = 50.886129, Latitude = 6.919789} };
 
         [Fact]
         public async void ExecuteAsync_IfOrderIsNull_ArgumentNullExceptionIsThrown()
         {
             // Prepare
-            var testee = new NewOrderCommand();
+            var testee = new NewOrderCommand(null);
 
             // Execute
 
@@ -31,7 +36,7 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
         public async void ExecuteAsync_IfOrderIsWithoutPositions_InvalidOperationIsThrown()
         {
             // Prepare
-            var testee = new NewOrderCommand();
+            var testee = new NewOrderCommand(null);
             var order = new Order();
 
             // Execute
@@ -44,7 +49,7 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
         public async void ExecuteAsync_asdf()
         {
             // Prepare
-            var testee = new NewOrderCommand();
+            var testee = new NewOrderCommand(null);
             var order = OrderBuilder
                 .At(KölnerDom)
                 .From(2020, 11, 28)
@@ -71,7 +76,7 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
 
         private DateTime? _validTo;
 
-        private DayOfWeek[] _weekdays;
+        private Schedule _schedule;
 
         private TimeSpan _earliestArrival;
         private TimeSpan _lastestArrival; 
@@ -102,9 +107,7 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
             var order = new Order()
             {
                 Location = _location,
-                EarliestArrival = _earliestArrival,
-                LatestArrival = _lastestArrival,
-                Schedule = new WeeklySchedule(_validFrom, _weekdays, _validTo)
+                Schedule = _schedule
             };
 
             foreach(var p in _positions)
@@ -117,7 +120,14 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
 
         public ITimeWindowExpression Every(params DayOfWeek[] weekdays)
         {
-            _weekdays = weekdays;
+            _schedule = new WeeklySchedule(_validFrom, weekdays, _earliestArrival, _lastestArrival, _validTo);
+
+            return this;
+        }
+
+        public ITimeWindowExpression On(DateTime day)
+        {
+            _schedule = new DaySchedule(day, _earliestArrival, _lastestArrival);
 
             return this;
         }
@@ -160,12 +170,14 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
     public interface IValidFromExpression
     {
         IValidToExpression To(int year, int month, int day);
-        ITimeWindowExpression Every(params DayOfWeek[] weekdays);        
+        ITimeWindowExpression Every(params DayOfWeek[] weekdays);  
+        ITimeWindowExpression On(DateTime day);      
     }
 
     public interface IValidToExpression
     {
         ITimeWindowExpression Every(params DayOfWeek[] weekdays);
+        ITimeWindowExpression On(DateTime day);
     }
 
     public interface ITimeWindowExpression
