@@ -35,6 +35,12 @@ namespace Tms.Services.EdgeManagement.Domain
 
         public Schedule Schedule { get; set; }
 
+        public ContainerType Container { get; set; }
+
+        public decimal Quantity { get; set; }
+
+        public ProductType Product { get; set; }
+
         public double DistanceLinearInKilometer { get; set; }
 
         public double DistanceEstimatedInKilometer { get; set; }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 
 namespace Tms.Services.EdgeManagement.Domain
 {
-    public class Schedule
+    public abstract class Schedule
     {
-        public Schedule(DateTime validFrom, TimeSpan timeWindowFrom, TimeSpan timeWindowTo, DateTime? validTo = null)
+        public Schedule(DateTime validFrom, TimeSpan? timeWindowFrom, TimeSpan? timeWindowTo, DateTime? validTo = null)
         {
             ValidFrom = validFrom;
             ValidTo = validTo;            
-            TimeWindowFrom = timeWindowFrom;
-            TimeWindowTo = timeWindowTo;
+            TimeWindowFrom = timeWindowFrom.HasValue ? timeWindowFrom.Value : new TimeSpan(00, 00, 00);
+            TimeWindowTo = timeWindowTo.HasValue ? timeWindowTo.Value : new TimeSpan(00, 00, 00);
         }
 
         public DateTime ValidFrom { get; private set; }
@@ -24,7 +24,7 @@ namespace Tms.Services.EdgeManagement.Domain
 
     public class DaySchedule : Schedule
     {
-        public DaySchedule(DateTime day, TimeSpan timeWindowFrom, TimeSpan timeWindowTo)
+        public DaySchedule(DateTime day, TimeSpan? timeWindowFrom = null, TimeSpan? timeWindowTo = null)
             : base(day, timeWindowFrom, timeWindowTo, day)
         {
             Day = day;
@@ -35,7 +35,7 @@ namespace Tms.Services.EdgeManagement.Domain
 
     public class WeeklySchedule : Schedule
     {
-        public WeeklySchedule(DateTime validFrom, DayOfWeek[] weekdays, TimeSpan timeWindowFrom, TimeSpan timeWindowTo, DateTime? validTo = null)
+        public WeeklySchedule(DateTime validFrom, DayOfWeek[] weekdays, TimeSpan? timeWindowFrom = null, TimeSpan? timeWindowTo = null, DateTime? validTo = null)
             : base(validFrom, timeWindowFrom, timeWindowTo, validTo)
         {
             Weekdays = weekdays;

@@ -1,65 +1,25 @@
 using System;
 using System.Collections.Generic;
+using Tms.Services.EdgeManagement.Domain.EventHandler;
 using Xunit;
 
-namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
+namespace Tms.Services.EdgeManagement.Domain
 {
     public class NewOrderCommandTests
     {
-        private static ContainerType Kiste = new ContainerType { Id = 1, Name = "Kiste" };
-
-        private static ContainerType Sack = new ContainerType { Id = 2, Name = "Sack" };
-
-        private static ProductType Kiwi = new ProductType { Id = 1, Name = "Kiwi" };
-
-        private static ProductType Banane = new ProductType { Id = 2, Name = "Banane" };
-
-        private static ProductType Nuss = new ProductType { Id = 3, Name = "Nuss" };
-
-        private static Location KölnerDom = new Location{ Name = "Kölner Dom", Position = new GeoPosition{Longitude = 50.9413, Latitude = 6.9583} };
-
-        private static Location PZ_50 = new Location{ Name = "Kölner Dom", Position = new GeoPosition{Longitude = 50.886129, Latitude = 6.919789} };
-
-        [Fact]
-        public async void ExecuteAsync_IfOrderIsNull_ArgumentNullExceptionIsThrown()
-        {
-            // Prepare
-            var testee = new NewOrderCommand(null);
-
-            // Execute
-
-            // Verify
-            await Assert.ThrowsAsync<ArgumentNullException>(()=> testee.ExecuteAsync(null));
-        }
-
-        [Fact]
-        public async void ExecuteAsync_IfOrderIsWithoutPositions_InvalidOperationIsThrown()
-        {
-            // Prepare
-            var testee = new NewOrderCommand(null);
-            var order = new Order();
-
-            // Execute
-
-            // Verify
-            await Assert.ThrowsAsync<InvalidOperationException>(()=> testee.ExecuteAsync(order));
-        }
-
         [Fact]
         public async void ExecuteAsync_asdf()
         {
             // Prepare
             var testee = new NewOrderCommand(null);
             var order = OrderBuilder
-                .At(KölnerDom)
+                .At(Locations.KölnerDom)
                 .From(2020, 11, 28)
                 .To(2020, 12, 31)
                 .Every(DayOfWeek.Monday, DayOfWeek.Tuesday)
                 .Between(new TimeSpan(16, 00, 00), new TimeSpan(17, 30, 00))
-                .Pickup(2, Kiste, Banane)
-                .Pickup(3, Kiste, Kiwi)
-                .Pickup(10, Sack, Nuss)
-                .Pickup(1, Kiste, new Load(Banane,0.4), new Load(Kiwi, 0.6))
+                .Load(2, ContainerTypes.Kiste, ProductTypes.Brief)
+                .Load(3, ContainerTypes.Kiste, ProductTypes.Paket)
                 .Build();
 
             // Execute
@@ -112,6 +72,7 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
 
             foreach(var p in _positions)
             {
+                p.Order = order;
                 order.Positions.Add(p);
             }
 
@@ -139,16 +100,9 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
             return this;
         }
 
-        public ILoadExpression Pickup(int quantity, ContainerType container, ProductType product)
+        public ILoadExpression Load(decimal quantity, ContainerType container, ProductType product)
         {
             _positions.Add(new OrderPosition(quantity,container,product));
-
-            return this;
-        }
-
-        public ILoadExpression Pickup(int quantity, ContainerType container, params Load[] loads)
-        {
-            _positions.Add(new OrderPosition(quantity, container, loads));
 
             return this;
         }
@@ -187,14 +141,12 @@ namespace Tms.Services.EdgeManagement.Domain.Commands.Tests
 
     public interface IBetweenExpression
     {
-        ILoadExpression Pickup(int quantity, ContainerType container, ProductType productType);    
-        ILoadExpression Pickup(int quantity, ContainerType container, params Load[] loads);
+        ILoadExpression Load(decimal quantity, ContainerType container, ProductType productType);    
     }
 
     public interface ILoadExpression
     {
-        ILoadExpression Pickup(int quantity, ContainerType container, ProductType productType);
-        ILoadExpression Pickup(int quantity, ContainerType container, params Load[] loads);
+        ILoadExpression Load(decimal quantity, ContainerType container, ProductType productType);
         Order Build();
     }
 }
